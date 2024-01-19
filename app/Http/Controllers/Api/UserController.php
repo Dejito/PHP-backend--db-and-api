@@ -26,9 +26,9 @@ class UserController extends Controller
             $validateUser = Validator::make(
                 $request->all(),
                 [
-                    'avatar' => 'required',
+                    // 'avatar' => 'required',
                     'type' => 'required',
-                    'open_id' => 'required',
+                    // 'open_id' => 'required',
                     'name' => 'required',
                     'email' => 'required',
                     'password' => 'required',
@@ -46,8 +46,8 @@ class UserController extends Controller
             $map = [];
             //type = mail, google, facebook, phone, apple
 
-            $map['type'] = $validated['type'];
-            $map['open_id'] = $validated['open_id'];
+            // $map['type'] = $validated['type'];
+            // $map['open_id'] = $validated['open_id'];
 
             $user = User::where($map) -> first();
             //whether user has logged in or not
@@ -69,6 +69,7 @@ class UserController extends Controller
                 $accessToken = $userInfo -> createToken(uniqid())-> plainTextToken;
 
                 $userInfo->acess_token = $accessToken;
+                User::where('id', '=', $userID)-> update(['access_token'=> $accessToken]);
 
                 return response()->json([
                     'status' => true,
