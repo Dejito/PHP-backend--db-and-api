@@ -54,24 +54,55 @@ class UserController extends Controller
             //empty means does not exist
             //then save te user in the database for the first time
 
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => $request->password
-            ]);
+            if (empty($user->id)){
+                //this certain user has nver been in our database
+                //our job is to assign user in the database
+                //this token is userid
+                $validated["token"] = md5(uniqid().rand(10000, 99999));
+                //user first time created
+                $validated['created_at'] = Carbon::now();
+                //returns the id of the row after saving
+                $userID= User::insertGetId($validated);
+                //user's all information
+                $userInfo = User::where('id', '=', $userID)-> first();
+
+                $accessToken = $userInfo -> createToken(uniqid())-> plainTextToken;
+
+                $userInfo->acess_token = $accessToken;
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'User created successfully',
+                    'data' => $userInfo,
+                ], 200);
+           
+            }
+
+            // $user = User::create([
+            //     'name' => $request->name,
+            //     'email' => $request->email,
+            //     'password' => $request->password
+            // ]);
+            $userID= User::insertGetId($validated);
+            //user's all information
+            $userInfo = User::where('id', '=', $userID)-> first();
+            $accessToken = $userInfo-> createToken(uniqid())-> plainTextToken;
+            $userInfo->acess_token = $accessToken;
 
             return response()->json([
                 'status' => true,
-                'message' => 'User created successfully',
-                'token' => $user->createToken("API TOKEN")->plainTextToken
+                'message' => 'User logged in  successfully',
+                'token' => $userInfo
             ], 200);
-        } catch (\Throwable $th) {
+
+        } catch (\Throwable $th) {  
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
             ], 500);
         }
     }
+
 
     /**
      * Login The User
