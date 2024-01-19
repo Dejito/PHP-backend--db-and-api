@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -26,6 +27,8 @@ class UserController extends Controller
                 $request->all(),
                 [
                     'avatar' => 'required',
+                    'type' => 'required',
+                    'open_id' => 'required',
                     'name' => 'required',
                     'email' => 'required',
                     'password' => 'required',
@@ -39,6 +42,17 @@ class UserController extends Controller
                     'errors' => $validateUser->errors()
                 ], 401);
             }
+            $validated = $validateUser -> validated();
+            $map = [];
+            //type = mail, google, facebook, phone, apple
+
+            $map['type'] = $validated['type'];
+            $map['open_id'] = $validated['open_id'];
+
+            $user = User::where($map) -> first();
+            //whether user has logged in or not
+            //empty means does not exist
+            //then save te user in the database for the first time
 
             $user = User::create([
                 'name' => $request->name,
